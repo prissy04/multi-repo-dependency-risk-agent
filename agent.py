@@ -39,7 +39,7 @@ def fetch_dependency_issues(github_client, repositories, dependency_labels):
         try:
             repo = github_client.get_repo(repo_name)
 
-            for issue in repo.get_issues(state="open"):
+            for issue in repo.get_issues(state="open")[:50]:
                 # Skip pull requests (GitHub API returns PRs as issues)
                 if issue.pull_request:
                     continue
