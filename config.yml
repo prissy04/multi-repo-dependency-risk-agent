@@ -1,12 +1,29 @@
 # ── MULTI-REPO DEPENDENCY RISK AGENT — CONFIGURATION ──────────────────────
 #
-# Edit this file to point the agent at your own repositories.
-# No code changes needed — everything is controlled from here.
+# HOW TO CONFIGURE THIS FOR YOUR ORGANIZATION
+# ─────────────────────────────────────────────
+# 1. Replace the repos under "repositories" with your own org's repos
+#    Format is always: your-org-name/repo-name
+#    Example: microsoft/azure-sdk or mycompany/payments-api
+#
+# 2. Update "dependency_labels" to match the labels your teams actually use
+#    Check your GitHub repos under Issues → Labels to see what exists
+#
+# 3. Adjust "risk_thresholds" to match your program's delivery cadence
+#    Shorter sprints = lower thresholds. Longer programs = higher thresholds
+#
+# 4. Update "report_repository" to your own agent repo so the
+#    weekly report posts there as a GitHub Issue every Monday
+#
+# NOTE: The repos listed below are PUBLIC demo repos with real issues.
+# They show the agent working with live data out of the box.
+# Replace them with your org's repos before deploying in production.
 # ──────────────────────────────────────────────────────────────────────────
 
 
 # Repositories to monitor (format: owner/repo-name)
-# Using public repos as demo data — replace with your org's repos
+# REPLACE THESE with your organization's repositories
+# Example: your-org/auth-service, your-org/payments-api
 repositories:
   - vercel/next.js
   - facebook/react
@@ -15,7 +32,8 @@ repositories:
 
 
 # Labels that signal a cross-team dependency issue
-# The agent will only surface issues carrying at least one of these labels
+# REPLACE THESE with the labels your teams use in GitHub Issues
+# Tip: go to any repo → Issues → Labels to see your existing labels
 dependency_labels:
   - dependency
   - blocked
@@ -24,14 +42,16 @@ dependency_labels:
   - blocker
 
 
-# Risk scoring thresholds
-# Adjust these to match your program's tolerance for delay
+# Risk scoring thresholds (in days)
+# ADJUST based on your program's sprint cadence
+# Example: 2-week sprints → set high_days_open to 10, medium to 5
 risk_thresholds:
   high_days_open: 14        # Issues open longer than this = HIGH risk
   medium_days_open: 7       # Issues open longer than this = MEDIUM risk
-  stale_days_no_update: 5   # No comment/update in this many days = staleness flag
+  stale_days_no_update: 5   # No update in this many days = staleness flag
 
 
-# The repo where the weekly report will be posted as a GitHub Issue
-# This should be YOUR agent repo
+# Where the weekly report gets posted (as a GitHub Issue every Monday)
+# REPLACE with your own agent repo name
+# Format: your-github-username/your-repo-name
 report_repository: prissy04/multi-repo-dependency-risk-agent
