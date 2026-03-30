@@ -1,0 +1,43 @@
+# ── MULTI-REPO DEPENDENCY RISK AGENT — GITHUB ACTIONS WORKFLOW ────────────
+#
+# This workflow runs the agent automatically every Monday at 8AM UTC.
+# It can also be triggered manually from the Actions tab at any time.
+# ──────────────────────────────────────────────────────────────────────────
+
+name: Weekly Dependency Risk Report
+
+on:
+  # Runs every Monday at 8AM UTC
+  schedule:
+    - cron: '0 8 * * 1'
+
+  # Allows manual trigger from the Actions tab in GitHub
+  # Useful for testing before waiting for Monday
+  workflow_dispatch:
+
+jobs:
+  run-risk-agent:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repo so the agent can access config.yml
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Python 3.11
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Step 3: Install the Python libraries from requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Step 4: Run the agent
+      # Secrets are stored in GitHub Settings → Secrets and variables → Actions
+      - name: Run dependency risk agent
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python agent.py
