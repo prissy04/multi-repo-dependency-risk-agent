@@ -1,0 +1,55 @@
+# ── TOKEN EXPIRY REMINDER ──────────────────────────────────────────────────
+#
+# This workflow runs daily and opens a GitHub Issue on June 23 2026
+# (85 days from when GH_TOKEN was created on March 30 2026).
+#
+# When you renew your token:
+# 1. Generate a new token at https://github.com/settings/tokens/new
+# 2. Update GH_TOKEN in Settings → Secrets → Actions
+# 3. Update the reminderDate below to 85 days from your new expiry date
+# ──────────────────────────────────────────────────────────────────────────
+
+name: GitHub Token Expiry Reminder
+
+on:
+  schedule:
+    # Runs daily at 8AM UTC to check if today is the reminder date
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post token expiry reminder issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            const today = new Date().toISOString().split('T')[0];
+            const reminderDate = '2026-06-23';
+
+            if (today === reminderDate) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '⚠️ Action Required: GitHub Token Expires in 5 Days',
+                body: `## GH_TOKEN Expiry Reminder\n\n` +
+                  `Your \`GH_TOKEN\` secret expires around **June 28, 2026**.\n\n` +
+                  `If it expires the agent will stop running and no weekly reports will be generated.\n\n` +
+                  `### Steps to renew (takes 2 minutes):\n` +
+                  `1. Go to https://github.com/settings/tokens/new\n` +
+                  `2. Set Note: \`dependency-risk-agent\`\n` +
+                  `3. Set Expiration: 90 days\n` +
+                  `4. Check the \`repo\` scope\n` +
+                  `5. Click **Generate token** and copy it\n` +
+                  `6. Go to this repo → Settings → Secrets → Actions\n` +
+                  `7. Click \`GH_TOKEN\` → Update secret → paste new token\n` +
+                  `8. Update the \`reminderDate\` in \`.github/workflows/token-expiry-reminder.yml\`\n\n` +
+                  `Close this issue once the token has been renewed.`,
+                labels: ['reminder']
+              });
+              console.log('Reminder issue created successfully.');
+            } else {
+              console.log(`Today is ${today}. Reminder date is ${reminderDate}. No action needed.`);
+            }
