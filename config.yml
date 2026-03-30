@@ -25,11 +25,8 @@
 # REPLACE THESE with your organization's repositories
 # Example: your-org/auth-service, your-org/payments-api
 repositories:
-  - vercel/next.js
-  - facebook/react
-  - microsoft/vscode
   - prissy04/multi-repo-dependency-risk-agent
-
+  - prissy04/freelancer-risk-analyzer
 
 # Labels that signal a cross-team dependency issue
 # REPLACE THESE with the labels your teams use in GitHub Issues
