@@ -25,7 +25,7 @@ def load_config(path="config.yml"):
 
 # ── 2. FETCH ISSUES FROM GITHUB ─────────────────────────────────────────────
 
-def fetch_dependency_issues(github_client, repositories, dependency_labels):
+def fetch_dependency_issues(github_client, repositories, dependency_labels, max_issues=100):
     """
     For each repo in the config, fetch all open issues that carry
     at least one of the dependency labels.
@@ -38,8 +38,14 @@ def fetch_dependency_issues(github_client, repositories, dependency_labels):
         print(f"  Scanning repo: {repo_name}")
         try:
             repo = github_client.get_repo(repo_name)
+            issue_count = 0
 
-            for issue in repo.get_issues(state="open")[:50]:
+            for issue in repo.get_issues(state="open"):
+                # Stop scanning if we hit the max limit for this repo
+                if issue_count >= max_issues:
+                    print(f"  Reached max_issues_per_repo limit ({max_issues}) for {repo_name}")
+                    break
+
                 # Skip pull requests (GitHub API returns PRs as issues)
                 if issue.pull_request:
                     continue
@@ -52,13 +58,14 @@ def fetch_dependency_issues(github_client, repositories, dependency_labels):
                 ]
 
                 if not matched_labels:
+                    issue_count += 1
                     continue
 
                 # Calculate days since issue was opened
                 now = datetime.now(timezone.utc)
                 days_open = (now - issue.created_at).days
 
-                # Calculate days since last comment/update
+                # Calculate days since last update
                 last_update = issue.updated_at
                 days_since_update = (now - last_update).days
 
@@ -74,6 +81,8 @@ def fetch_dependency_issues(github_client, repositories, dependency_labels):
                     "matched_labels": matched_labels,
                     "body_preview": (issue.body or "")[:300],
                 })
+
+                issue_count += 1
 
         except Exception as e:
             print(f"  WARNING: Could not access repo {repo_name}: {e}")
@@ -156,10 +165,10 @@ Issue {i}:
   Description Preview: {issue['body_preview'] or 'No description provided.'}
 """
 
-    prompt = f"""You are an AI assistant helping a Technical Program Manager (TPM) understand 
+    prompt = f"""You are an AI assistant helping a Technical Program Manager (TPM) understand
 cross-team dependency risks across multiple GitHub repositories.
 
-Below is a list of open GitHub issues labeled as cross-team dependencies, 
+Below is a list of open GitHub issues labeled as cross-team dependencies,
 along with their risk signals. Your job is to:
 1. Group them by risk level (HIGH, MEDIUM, LOW)
 2. For each issue, write a brief 2-3 sentence analysis of why it is risky
@@ -196,9 +205,9 @@ def post_report_as_issue(github_client, report_repo, report_content, issue_count
     title = f"🤖 Weekly Dependency Risk Report — {today} ({issue_count} issues found)"
 
     header = f"""## Weekly Dependency Risk Report
-**Generated:** {today}  
-**Issues Scanned:** {issue_count}  
-**Agent:** Multi-Repo Cross-Team Dependency Risk Agent  
+**Generated:** {today}
+**Issues Scanned:** {issue_count}
+**Agent:** Multi-Repo Cross-Team Dependency Risk Agent
 
 ---
 
@@ -229,8 +238,10 @@ def main():
     dependency_labels = config["dependency_labels"]
     thresholds = config["risk_thresholds"]
     report_repo = config["report_repository"]
+    max_issues = config.get("max_issues_per_repo", 100)
     print(f"  Monitoring {len(repositories)} repositories")
     print(f"  Labels: {', '.join(dependency_labels)}")
+    print(f"  Max issues per repo: {max_issues}")
 
     print("\n[2/5] Initializing API clients...")
     github_token = os.environ["GH_TOKEN"]
@@ -240,7 +251,9 @@ def main():
     print("  GitHub and Anthropic clients ready")
 
     print("\n[3/5] Fetching dependency-labeled issues from GitHub...")
-    issues = fetch_dependency_issues(github_client, repositories, dependency_labels)
+    issues = fetch_dependency_issues(
+        github_client, repositories, dependency_labels, max_issues
+    )
     print(f"  Found {len(issues)} dependency issues across all repos")
 
     print("\n[4/5] Calculating risk levels...")
