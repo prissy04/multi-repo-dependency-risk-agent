@@ -1,0 +1,37 @@
+# ── MULTI-REPO DEPENDENCY RISK AGENT — CONFIGURATION ──────────────────────
+#
+# Edit this file to point the agent at your own repositories.
+# No code changes needed — everything is controlled from here.
+# ──────────────────────────────────────────────────────────────────────────
+
+
+# Repositories to monitor (format: owner/repo-name)
+# Using public repos as demo data — replace with your org's repos
+repositories:
+  - vercel/next.js
+  - facebook/react
+  - microsoft/vscode
+  - prissy04/multi-repo-dependency-risk-agent
+
+
+# Labels that signal a cross-team dependency issue
+# The agent will only surface issues carrying at least one of these labels
+dependency_labels:
+  - dependency
+  - blocked
+  - cross-team
+  - waiting-on-external
+  - blocker
+
+
+# Risk scoring thresholds
+# Adjust these to match your program's tolerance for delay
+risk_thresholds:
+  high_days_open: 14        # Issues open longer than this = HIGH risk
+  medium_days_open: 7       # Issues open longer than this = MEDIUM risk
+  stale_days_no_update: 5   # No comment/update in this many days = staleness flag
+
+
+# The repo where the weekly report will be posted as a GitHub Issue
+# This should be YOUR agent repo
+report_repository: prissy04/multi-repo-dependency-risk-agent
