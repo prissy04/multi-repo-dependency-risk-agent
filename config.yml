@@ -15,9 +15,10 @@
 # 4. Update "report_repository" to your own agent repo so the
 #    weekly report posts there as a GitHub Issue every Monday
 #
-# NOTE: The repos listed below are PUBLIC demo repos with real issues.
-# They show the agent working with live data out of the box.
-# Replace them with your org's repos before deploying in production.
+# 5. Adjust "max_issues_per_repo" based on your org size
+#    50-100 for testing, 200-500 for large organizations
+#
+# NOTE: The repos listed below are demo repos — replace with your own.
 # ──────────────────────────────────────────────────────────────────────────
 
 
@@ -27,6 +28,9 @@
 repositories:
   - prissy04/multi-repo-dependency-risk-agent
   - prissy04/freelancer-risk-analyzer
+  # ADD YOUR OWN REPOS BELOW
+  # - your-org/repo-name
+
 
 # Labels that signal a cross-team dependency issue
 # REPLACE THESE with the labels your teams use in GitHub Issues
@@ -46,6 +50,12 @@ risk_thresholds:
   high_days_open: 14        # Issues open longer than this = HIGH risk
   medium_days_open: 7       # Issues open longer than this = MEDIUM risk
   stale_days_no_update: 5   # No update in this many days = staleness flag
+
+
+# Maximum issues to scan per repo
+# Increase for larger organizations (may increase run time)
+# Recommended: 50-100 for testing, 200-500 for production
+max_issues_per_repo: 100
 
 
 # Where the weekly report gets posted (as a GitHub Issue every Monday)
